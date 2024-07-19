@@ -12,7 +12,9 @@ local get_unsaved_buffers_total = function()
     local unsaved_buffers = 0
 
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_get_option(buffer, "modified") then
+        local buffer_name = vim.api.nvim_buf_get_name(buffer)
+
+        if buffer_name ~= "" and vim.api.nvim_buf_get_option(buffer, "modified") then
             unsaved_buffers = unsaved_buffers + 1
         end
     end
@@ -26,8 +28,34 @@ local save_projects = function(data)
     vim.fn.writefile({ json }, config.get().projects_file)
 end
 
+local is_current_project = function(project)
+    return project == vim.fn.getcwd()
+end
+
+local get_projects = function()
+    local results = {}
+
+    for _, project in ipairs(projects) do
+        local is_current = is_current_project(project)
+
+        if is_current and config.get().hide_current_project then
+            -- pass
+        else
+            local icon = is_current and " [ current]" or ""
+
+            table.insert(results, project .. icon)
+        end
+    end
+
+    print(vim.inspect(results))
+
+    return results
+end
+
 M.show = function()
-    if #projects == 0 then
+    local projects_list = get_projects()
+
+    if #projects_list == 0 then
         vim.notify("  Your projects list is empty", "warn", { title = "Projects" })
 
         return
@@ -36,7 +64,7 @@ M.show = function()
     pickers.new({}, {
         prompt_title = "Projects",
         finder = finders.new_table {
-            results = projects,
+            results = projects_list
         },
         sorter = conf.generic_sorter({}),
         attach_mappings = function(prompt_bufnr, map)
@@ -56,6 +84,14 @@ M.show = function()
                     return
                 end
 
+                local index = selection.index
+                local project = projects_list[index]
+
+                if is_current_project(project) then
+                    return
+                end
+
+                actions.close(prompt_bufnr)
                 local auto_session = pcall(require, "auto-session")
                 if auto_session then
                     auto_session.SaveSession()
@@ -88,10 +124,10 @@ M.show = function()
                 local selection = action_state.get_selected_entry(prompt_bufnr)
                 actions.close(prompt_bufnr)
 
-                for i, project in ipairs(projects) do
+                for i, project in ipairs(projects_list) do
                     if project == selection.value then
-                        table.remove(projects, i)
-                        save_projects(projects)
+                        table.remove(projects_list, i)
+                        save_projects(projects_list)
 
                         vim.notify(" The project has been removed from your list", "info", { title = "Project removed" })
                         break
