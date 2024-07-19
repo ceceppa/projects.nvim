@@ -52,6 +52,18 @@ local get_projects = function()
     return results
 end
 
+local function close_unrelated_buffers()
+    local all_buffers = vim.fn.getbufinfo({ buflisted = 1 })
+
+    for _, buffer in ipairs(all_buffers) do
+        local path = vim.fn.bufname(buffer.bufnr)
+        local first_char = string.sub(path, 1, 1)
+        if first_char == "/" then
+            vim.cmd("bdelete " .. buffer.bufnr)
+        end
+    end
+end
+
 M.show = function()
     local projects_list = get_projects()
 
@@ -109,17 +121,7 @@ M.show = function()
                         auto_session.RestoreSession()
                     end
 
-                    local all_buffers = vim.fn.getbufinfo({ buflisted = 1 })
-
-                    for _, buffer in ipairs(all_buffers) do
-                        local path = vim.fn.bufname(buffer.bufnr)
-                        local first_char = string.sub(path, 1, 1)
-
-                        if first_char == "/" then
-                            vim.cmd("bdelete " .. buffer.bufnr)
-                        end
-                    end
-
+                    vim.defer_fn(close_unrelated_buffers, 100)
                     vim.api.nvim_exec('doautocmd User ProjectOpened', false)
                 end, 100)
             end
