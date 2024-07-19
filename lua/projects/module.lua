@@ -92,8 +92,11 @@ M.show = function()
                 end
 
                 actions.close(prompt_bufnr)
-                local auto_session = pcall(require, "auto-session")
-                if auto_session then
+                local auto_session = nil
+                local ok = pcall(require, "auto-session")
+
+                if ok then
+                    auto_session = require("auto-session")
                     auto_session.SaveSession()
                 end
 
