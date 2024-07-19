@@ -32,6 +32,13 @@ local is_current_project = function(project)
     return project == vim.fn.getcwd()
 end
 
+local is_git_project = function()
+    local dir = vim.fn.getcwd()
+    local git_dir = dir .. "/.git"
+
+    return vim.fn.isdirectory(git_dir) == 1
+end
+
 local function change_directory(new_path)
     local is_valid_path = vim.fn.isdirectory(new_path) == 1
     if not is_valid_path then
@@ -207,7 +214,11 @@ M.init = function()
         save_projects(_projects)
     end
 
-    if config.get().auto_add then
+    if config.get().auto_add == "none" then
+        return
+    elseif config.get().auto_add == "git" and is_git_project() then
+        M.add(true)
+    elseif config.get().auto_add == "all" then
         M.add(true)
     end
 end
