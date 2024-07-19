@@ -84,6 +84,8 @@ M.show = function()
                     return
                 end
 
+                actions.close(prompt_bufnr)
+
                 local index = selection.index
                 local project = _projects[index]
 
@@ -91,7 +93,6 @@ M.show = function()
                     return
                 end
 
-                actions.close(prompt_bufnr)
                 local auto_session = nil
                 local ok = pcall(require, "auto-session")
 
