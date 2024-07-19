@@ -47,8 +47,6 @@ local get_projects = function()
         end
     end
 
-    print(vim.inspect(results))
-
     return results
 end
 
