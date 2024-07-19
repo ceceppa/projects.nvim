@@ -15,7 +15,9 @@ use {
         require('projects').setup()
     end,
     requires = {
-        'rmagatti/auto-session' -- optional
+        'nvim-telescope/telescope.nvim',
+        'nvim-telescope/telescope-ui-select.nvim',
+        'rmagatti/auto-session' -- optional,
     }
 }
 ```
