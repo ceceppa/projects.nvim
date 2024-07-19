@@ -32,6 +32,17 @@ local is_current_project = function(project)
     return project == vim.fn.getcwd()
 end
 
+local function change_directory(new_path)
+    local is_valid_path = vim.fn.isdirectory(new_path) == 1
+    if not is_valid_path then
+        vim.notify("Invalid path: " .. new_path, "error", { title = "Error" })
+
+        return
+    end
+
+    vim.cmd("cd " .. new_path)
+end
+
 local get_projects = function()
     local results = {}
 
@@ -112,7 +123,7 @@ M.show = function()
                 end
 
                 local folder = selection.value
-                vim.cmd('cd ' .. folder)
+                change_directory(folder)
 
                 vim.defer_fn(function()
                     if auto_session then
@@ -128,7 +139,7 @@ M.show = function()
                 local selection = action_state.get_selected_entry(prompt_bufnr)
                 actions.close(prompt_bufnr)
 
-                for i, project in ipairs(projects_list) do
+                for i, project in ipairs(_projects) do
                     if project == selection.value then
                         table.remove(projects_list, i)
                         save_projects(projects_list)
