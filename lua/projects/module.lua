@@ -6,7 +6,7 @@ local action_state = require "telescope.actions.state"
 local config = require("projects.config")
 
 local M = {}
-local projects = {}
+local _projects = {}
 
 local get_unsaved_buffers_total = function()
     local unsaved_buffers = 0
@@ -35,7 +35,7 @@ end
 local get_projects = function()
     local results = {}
 
-    for _, project in ipairs(projects) do
+    for _, project in ipairs(_projects) do
         local is_current = is_current_project(project)
 
         if is_current and config.get().hide_current_project then
@@ -85,7 +85,7 @@ M.show = function()
                 end
 
                 local index = selection.index
-                local project = projects_list[index]
+                local project = _projects[index]
 
                 if is_current_project(project) then
                     return
@@ -153,7 +153,7 @@ M.add = function(is_silent)
     local exists = false
     local current_path = vim.fn.getcwd()
 
-    for _, project in ipairs(projects) do
+    for _, project in ipairs(_projects) do
         if project == current_path then
             exists = true
             break
@@ -161,8 +161,8 @@ M.add = function(is_silent)
     end
 
     if not exists then
-        table.insert(projects, current_path)
-        save_projects(projects)
+        table.insert(_projects, current_path)
+        save_projects(_projects)
 
         if not is_silent then
             vim.notify("  The project has been added to the list", nil, { title = "Project added" })
@@ -177,7 +177,7 @@ end
 M.is_project = function()
     local current_path = vim.fn.getcwd()
 
-    for _, project in ipairs(projects) do
+    for _, project in ipairs(_projects) do
         if project == current_path then
             return true
         end
@@ -190,9 +190,9 @@ M.init = function()
     local projects_file = config.get().projects_file
 
     if vim.fn.filereadable(projects_file) == 1 then
-        projects = vim.fn.json_decode(vim.fn.readfile(vim.fn.expand(projects_file)))
+        _projects = vim.fn.json_decode(vim.fn.readfile(vim.fn.expand(projects_file)))
     else
-        save_projects(projects)
+        save_projects(_projects)
     end
 
     if config.get().auto_add then
