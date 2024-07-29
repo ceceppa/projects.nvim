@@ -2,6 +2,11 @@
 
 A simple project manager for Neovim.
 
+## Features
+
+- Switch between projects
+- Updates terminal cwd on project change
+
 ## Installation
 
 Use your favorite plugin manager to install this plugin. For example:
@@ -46,7 +51,7 @@ If you want to save and restore the current or previous session you can add the 
 vim.api.nvim_create_autocmd("User", {
     pattern = "ProjectOpened",
     callback = function()
-        print("ProjectOpened")
+        require('projects').setup()
     end,
 })
 ```
