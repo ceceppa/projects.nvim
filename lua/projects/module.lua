@@ -39,6 +39,46 @@ local is_git_project = function()
     return vim.fn.isdirectory(git_dir) == 1
 end
 
+local function abbreviate_path(path)
+    if config.get().abbreviate_home == false then
+        return path
+    end
+
+    local full_path = vim.fn.expand(path)
+    local home = vim.fn.expand('~')
+
+    if vim.startswith(full_path, home) then
+        path = '~' .. string.sub(full_path, #home + 1)
+    end
+
+    return path
+end
+
+local function change_directory_and_update_terminal(path)
+    path = vim.fn.expand(path)
+    vim.api.nvim_set_current_dir(path)
+
+    path = abbreviate_path(path)
+    local escaped_path = path:gsub("'", "'\\''")
+
+    -- OSC 7 escape sequence to inform the terminal of the new working directory
+    local osc7 = string.format('\027]7;file://%s%s\027\\', vim.loop.os_uname().sysname == "Darwin" and "localhost" or "",
+        escaped_path)
+
+    -- OSC 1 escape sequence to set the terminal's icon (tab) title
+    local osc1 = string.format('\027]1;%s\027\\', vim.fn.fnamemodify(path, ':t'))
+
+    -- OSC 2 escape sequence to set the terminal's window title
+    local osc2 = string.format('\027]2;%s\027\\', path)
+
+    -- Send the escape sequences to the terminal
+    io.stdout:write(osc7)
+    io.stdout:write(osc1)
+    io.stdout:write(osc2)
+
+    io.stdout:flush()
+end
+
 local function change_directory(new_path)
     local is_valid_path = vim.fn.isdirectory(new_path) == 1
     if not is_valid_path then
@@ -47,7 +87,7 @@ local function change_directory(new_path)
         return
     end
 
-    vim.cmd("cd " .. new_path)
+    change_directory_and_update_terminal(new_path)
 end
 
 local get_projects = function()
@@ -59,7 +99,8 @@ local get_projects = function()
         if is_current and config.get().hide_current_project then
             -- pass
         else
-            local icon = is_current and " [ current]" or ""
+            local icon = is_current and " [  current]" or ""
+            project = abbreviate_path(project)
 
             table.insert(results, project .. icon)
         end
