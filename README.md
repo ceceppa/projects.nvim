@@ -31,6 +31,7 @@ use {
 
 - `:Projects` to open the project manager
 - `:Project add` to add a new project
+- Projects List: `<C-x>` to delete a project from list
 
 ## Configuration
 
