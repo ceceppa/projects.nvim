@@ -55,7 +55,6 @@ local function abbreviate_path(path)
 end
 
 local function change_directory_and_update_terminal(path)
-    path = vim.fn.expand(path)
     vim.api.nvim_set_current_dir(path)
 
     path = abbreviate_path(path)
@@ -80,14 +79,18 @@ local function change_directory_and_update_terminal(path)
 end
 
 local function change_directory(new_path)
+    new_path = vim.fn.expand(new_path)
     local is_valid_path = vim.fn.isdirectory(new_path) == 1
+
     if not is_valid_path then
         vim.notify("Invalid path: " .. new_path, "error", { title = "Error" })
 
-        return
+        return false
     end
 
     change_directory_and_update_terminal(new_path)
+
+    return true
 end
 
 local get_projects = function()
@@ -171,16 +174,18 @@ M.show = function()
                 end
 
                 local folder = selection.value
-                change_directory(folder)
+                local result = change_directory(folder)
 
-                vim.defer_fn(function()
-                    if auto_session then
-                        auto_session.RestoreSession()
-                    end
+                if result then
+                    vim.defer_fn(function()
+                        if auto_session then
+                            auto_session.RestoreSession()
+                        end
 
-                    vim.defer_fn(close_unrelated_buffers, 100)
-                    vim.api.nvim_exec('doautocmd User ProjectOpened', false)
-                end, 100)
+                        vim.defer_fn(close_unrelated_buffers, 100)
+                        vim.api.nvim_exec('doautocmd User ProjectOpened', false)
+                    end, 100)
+                end
             end
 
             local remove_project = function()
