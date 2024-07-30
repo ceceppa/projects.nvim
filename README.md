@@ -20,8 +20,8 @@ use {
         require('projects').setup()
     end,
     requires = {
-        'nvim-telescope/telescope.nvim',
-        'nvim-telescope/telescope-ui-select.nvim',
+        'nvim-telescope/telescope.nvim', -- optional
+        'nvim-telescope/telescope-ui-select.nvim', -- optional
         'rmagatti/auto-session' -- optional,
     }
 }
@@ -41,6 +41,7 @@ require('projects').setup {
     close_unrelated_buffers = true, -- close all buffers that are not related to the project after opening it
     projects_file = '~/.config/nvim/projects.json', -- default
     hide_current_project = false, -- hide the current project in the project list
+    abbreviate_home = true, -- abbreviate home directory in project list
 }
 ```
 
@@ -52,7 +53,7 @@ If you want to save and restore the current or previous session you can add the 
 vim.api.nvim_create_autocmd("User", {
     pattern = "ProjectOpened",
     callback = function()
-        require('projects').setup()
+        print("ProjectOpened")
     end,
 })
 ```
