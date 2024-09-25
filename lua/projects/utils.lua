@@ -30,7 +30,15 @@ local function close_unrelated_buffers()
     end
 end
 
+local function expand_path(path)
+    return vim.fn.expand(path)
+end
+
 local is_current_project = function(project)
+    if config.get().abbreviate_home then
+        project = expand_path(project)
+    end
+
     return project == vim.fn.getcwd()
 end
 
@@ -47,10 +55,6 @@ local function abbreviate_path(path)
     end
 
     return path
-end
-
-local function expand_path(path)
-    return vim.fn.expand(path)
 end
 
 local function change_directory_and_update_terminal(path)
