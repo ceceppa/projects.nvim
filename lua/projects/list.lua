@@ -67,15 +67,21 @@ local get_projects = function()
 end
 
 local function remove_project(project_path)
+    if config.get().abbreviate_home then
+        project_path = utils.expand_path(project_path)
+    end
+
     for i, project in ipairs(_projects) do
         if project == project_path then
             table.remove(_projects, i)
             save_projects()
 
             vim.notify(" The project has been removed from your list", "info", { title = "Project removed" })
-            break
+            return
         end
     end
+
+    vim.notify("  The project does not exist in your list", "warn", { title = "Project not removed" })
 end
 
 local function create_popup(projects)

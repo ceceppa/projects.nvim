@@ -49,6 +49,10 @@ local function abbreviate_path(path)
     return path
 end
 
+local function expand_path(path)
+    return vim.fn.expand(path)
+end
+
 local function change_directory_and_update_terminal(path)
     vim.api.nvim_set_current_dir(path)
 
@@ -138,5 +142,6 @@ return {
     is_current_project = is_current_project,
     abbreviate_path = abbreviate_path,
     change_directory = change_directory,
-    is_git_project = is_git_project
+    is_git_project = is_git_project,
+    expand_path = expand_path,
 }
